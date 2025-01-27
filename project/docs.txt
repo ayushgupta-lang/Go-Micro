@@ -1,0 +1,3 @@
+For runnung docker compose file 
+
+docker-compose up -d
