@@ -41,21 +41,22 @@
             method: 'POST',
         }
 
-        fetch("http:\/\/localhost:8080", body)
+        fetch("http:\/\/localhost:8081", body)
         .then((response) => response.json())
         .then((data) => {
-            sent.innerHTML = JSON.stringify(data, undefined, 4);
-            if (data.error) {
+            sent.innerHTML = "empty post request";
+            received.innerHTML = JSON.stringify(data, undefined, 4);
+            if (data.error) { 
                 console.log(data.message);
             } else {
-                output.innerHTML += `<br><strong>Response from broker service</strong>: ${data.message}`
+                output.innerHTML += `<br><strong>Response from broker service</strong>: ${data.message}`;  
             }
         })
         .catch((error) => {
             output.innerHTML += "<br><br>Error: " + error;
-        })
-    })
-
+        }) 
+    })  
+  
         
-    </script>
+    </script> 
 {{end}}
