@@ -8,8 +8,8 @@ import (
 )
 
 type RequestPayload struct {
-	Action string `json:"action"`
-	Auth   string `json:"auth,omitempty"`
+	Action string      `json:"action"`
+	Auth   AuthPayload `json:"auth,omitempty"`
 }
 
 type AuthPayload struct {
@@ -37,7 +37,7 @@ func (app *Config) HandleSubmission(w http.ResponseWriter, r *http.Request) {
 
 	switch requestPayload.Action {
 	case "auth":
-
+		app.authenticate(w, requestPayload.Auth)
 	default:
 		app.errorJSON(w, errors.New("unknown action"))
 	}
@@ -49,7 +49,51 @@ func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload) {
 	jsonData, _ := json.MarshalIndent(a, "", "\t")
 
 	//call the service
-	request, err := http.NewRequest("POST", "http://authentication-service/authenticate", bytes.NewBuffer(jsonData))
+	// request, err := http.NewRequest("POST", "http://authentication-service/authenticate", bytes.NewBuffer(jsonData))
+	request, err := http.NewRequest("POST", "http://project-authentication-service-1:8083/authenticate", bytes.NewBuffer(jsonData))
+
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+	defer response.Body.Close()
 
 	// make sure we get back the correct status code
+	if response.StatusCode == http.StatusUnauthorized {
+		app.errorJSON(w, errors.New("invalid credentials"))
+		return
+	} else if response.StatusCode != http.StatusAccepted {
+		app.errorJSON(w, errors.New("error calling auth service"))
+		return
+	}
+
+	// create a variable we will read response.Body to
+	var jsonFromService jsonResonse
+
+	//decode the json from the auth service
+	err = json.NewDecoder(response.Body).Decode(&jsonFromService)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	// if the error is true, that means something went wrong with the auth service
+	if jsonFromService.Error {
+		app.errorJSON(w, errors.New(jsonFromService.Message))
+		return
+	}
+
+	var payload jsonResonse
+	payload.Error = false
+	payload.Message = "Authenticated!"
+	payload.Data = jsonFromService.Data
+
+	app.writeJSON(w, http.StatusAccepted, payload)
 }
