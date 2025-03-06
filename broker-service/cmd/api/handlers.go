@@ -155,7 +155,7 @@ func (app *Config) sendMail(w http.ResponseWriter, msg MailPayload) {
 
 	//call the mail service
 	// mailServiceURL := "http://mail-service/send"
-	mailServiceURL := "http://project-mailer-service-1:8085/send"
+	mailServiceURL := "http://project-mailer-service-1:8086/send"
 
 	//post to mail service
 	request, err := http.NewRequest("POST", mailServiceURL, bytes.NewBuffer(jsonData))
