@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 
-	amqp "github.com/rabbitmq/qmqp091-go"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type Consumer struct {
